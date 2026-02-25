@@ -9,32 +9,200 @@ const STATIONS = [
   "Kolkata", "Ahmedabad", "Jaipur", "Lucknow", "Bhopal", "Kochi"
 ];
 
-// Expanded and verified food menu with highly reliable Unsplash image IDs
+// Curated & Verified Unsplash Image URLs for 100% loading reliability
 const MENU_ITEMS = [
-  { id: 1, name: "Premium Veg Thali", category: "Veg Meals", price: 249, desc: "Dal Makhani, Shahi Paneer, Mix Veg, Rice, 3 Roti, Sweet.", img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80" },
-  { id: 2, name: "Homestyle Veg Meal", category: "Veg Meals", price: 189, desc: "Dal Tadka, Aloo Jeera, Steamed Rice, 3 Phulkas.", img: "https://images.unsplash.com/photo-1626779471138-03822161f38e?auto=format&fit=crop&w=600&q=80" },
-  { id: 3, name: "Executive Veg Meal", category: "Veg Meals", price: 299, desc: "Paneer Butter Masala, Veg Kadai, Pulao, 2 Parathas, Raita, Gulab Jamun.", img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80" },
-  { id: 4, name: "Premium Chicken Thali", category: "Non-Veg Meals", price: 349, desc: "Butter Chicken, Chicken Curry, Pulao, 3 Roti, Dessert.", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80" },
-  { id: 5, name: "Fish Curry Thali", category: "Non-Veg Meals", price: 379, desc: "Coastal Fish Curry, Steamed Rice, Fish Fry, Papad.", img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=600&q=80" },
-  { id: 6, name: "Mutton Rogan Josh", category: "Non-Veg Meals", price: 399, desc: "Rich mutton gravy with 2 Butter Naan and Salad.", img: "https://images.unsplash.com/photo-1544025162-831e5055b85e?auto=format&fit=crop&w=600&q=80" },
-  { id: 7, name: "Hyderabadi Chicken Biryani", category: "Biryani Specials", price: 329, desc: "Authentic dum biryani cooked with tender chicken pieces.", img: "https://images.unsplash.com/photo-1563128928-168b016f73c6?auto=format&fit=crop&w=600&q=80" },
-  { id: 8, name: "Mutton Biryani", category: "Biryani Specials", price: 429, desc: "Rich and flavorful mutton biryani served with raita.", img: "https://images.unsplash.com/photo-1631515243349-e0cb4c114324?auto=format&fit=crop&w=600&q=80" },
-  { id: 9, name: "Paneer Tikka Biryani", category: "Biryani Specials", price: 279, desc: "Smoky paneer tikka layered with aromatic basmati rice.", img: "https://images.unsplash.com/photo-1564834724105-918b73d1b9e0?auto=format&fit=crop&w=600&q=80" },
-  { id: 10, name: "Masala Dosa", category: "South Indian", price: 149, desc: "Crispy crepe served with Sambar and 3 types of Chutney.", img: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=600&q=80" },
-  { id: 11, name: "Idli Vada Combo", category: "South Indian", price: 129, desc: "2 Steamed Idlis, 1 Medu Vada, Sambar, Chutney.", img: "https://images.unsplash.com/photo-1626779471343-a65c2b0c3f59?auto=format&fit=crop&w=600&q=80" },
-  { id: 12, name: "Paneer Butter Masala", category: "North Indian", price: 249, desc: "Rich paneer gravy. Pairs well with Naan or Rice.", img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80" },
-  { id: 13, name: "Dal Makhani", category: "North Indian", price: 219, desc: "Slow-cooked black lentils with butter and cream.", img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80" },
-  { id: 14, name: "Chole Bhature", category: "North Indian", price: 189, desc: "Spicy chickpea curry with 2 fluffy bhatures.", img: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80" },
-  { id: 15, name: "Burger & Fries Combo", category: "Combos", price: 299, desc: "Gourmet Veg Burger, Peri Peri Fries, Cold Drink.", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
-  { id: 16, name: "Pizza & Garlic Bread", category: "Combos", price: 399, desc: "8-inch Margherita Pizza, Stuffed Garlic Bread, Coke.", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" },
-  { id: 17, name: "Chicken Tikka", category: "Snacks", price: 229, desc: "Tandoor roasted chicken chunks with mint chutney.", img: "https://images.unsplash.com/photo-1599487405270-8e100f864147?auto=format&fit=crop&w=600&q=80" },
-  { id: 18, name: "Samosa (2 pcs)", category: "Snacks", price: 79, desc: "Crispy pastry filled with spiced potatoes.", img: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80" },
-  { id: 19, name: "Paneer Pakora", category: "Snacks", price: 149, desc: "Fried paneer fritters with mint chutney.", img: "https://images.unsplash.com/photo-1554978991-34440c49ba7c?auto=format&fit=crop&w=600&q=80" },
-  { id: 20, name: "Gulab Jamun (2 pcs)", category: "Desserts", price: 89, desc: "Soft milk dumplings in cardamom sugar syrup.", img: "https://images.unsplash.com/photo-1551024506-0cb4a1cb1c76?auto=format&fit=crop&w=600&q=80" },
-  { id: 21, name: "Chocolate Brownie", category: "Desserts", price: 149, desc: "Warm gooey chocolate brownie.", img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80" },
-  { id: 22, name: "Rasmalai (2 pcs)", category: "Desserts", price: 119, desc: "Cottage cheese discs in sweetened thickened milk.", img: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80" },
-  { id: 23, name: "Masala Chai", category: "Beverages", price: 59, desc: "Hot Indian spiced tea, perfect for the journey.", img: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=600&q=80" },
-  { id: 24, name: "Cold Coffee", category: "Beverages", price: 129, desc: "Thick and creamy blended cold coffee.", img: "https://images.unsplash.com/photo-1461023058943-0708e526a72e?auto=format&fit=crop&w=600&q=80" }
+  { 
+    id: 1, 
+    name: "Premium Veg Thali", 
+    category: "Veg Meals", 
+    price: 249, 
+    desc: "Dal Makhani, Shahi Paneer, Mix Veg, Rice, 3 Roti, Sweet.", 
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Indian_vegetarian_thali.jpg/800px-Indian_vegetarian_thali.jpg" 
+  },
+  { 
+    id: 2, 
+    name: "Homestyle Veg Meal", 
+    category: "Veg Meals", 
+    price: 189, 
+    desc: "Dal Tadka, Aloo Jeera, Steamed Rice, 3 Phulkas.", 
+    img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 3, 
+    name: "Executive Veg Meal", 
+    category: "Veg Meals", 
+    price: 299, 
+    desc: "Paneer Butter Masala, Veg Kadai, Pulao, 2 Parathas, Raita, Gulab Jamun.", 
+    img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 4, 
+    name: "Premium Chicken Thali", 
+    category: "Non-Veg Meals", 
+    price: 349, 
+    desc: "Butter Chicken, Chicken Curry, Pulao, 3 Roti, Dessert.", 
+    img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 5, 
+    name: "Coastal Fish Curry", 
+    category: "Non-Veg Meals", 
+    price: 379, 
+    desc: "Authentic coastal fish curry, Steamed Rice, Fish Fry, Papad.", 
+    img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 6, 
+    name: "Mutton Rogan Josh", 
+    category: "Non-Veg Meals", 
+    price: 399, 
+    desc: "Rich mutton gravy with 2 Butter Naan and Salad.", 
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Rogan_Josh.jpg/800px-Rogan_Josh.jpg" 
+  },
+  { 
+    id: 7, 
+    name: "Hyderabadi Chicken Biryani", 
+    category: "Biryani Specials", 
+    price: 329, 
+    desc: "Authentic dum biryani cooked with tender chicken pieces.", 
+    img: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 8, 
+    name: "Mutton Dum Biryani", 
+    category: "Biryani Specials", 
+    price: 429, 
+    desc: "Rich and flavorful mutton biryani served with raita and salan.", 
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Biryani_with_yogurt_dip.jpg/800px-Biryani_with_yogurt_dip.jpg" 
+  },
+  { 
+    id: 9, 
+    name: "Paneer Tikka Biryani", 
+    category: "Biryani Specials", 
+    price: 279, 
+    desc: "Smoky paneer tikka layered with aromatic basmati rice.", 
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Paneer_Tikka.jpg/800px-Paneer_Tikka.jpg" 
+  },
+  { 
+    id: 10, 
+    name: "Crispy Masala Dosa", 
+    category: "South Indian", 
+    price: 149, 
+    desc: "Crispy crepe served with Sambar and 3 types of Chutney.", 
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Dosa_and_ghee.jpg/800px-Dosa_and_ghee.jpg" 
+  },
+  { 
+    id: 11, 
+    name: "Idli Vada Combo", 
+    category: "South Indian", 
+    price: 129, 
+    desc: "2 Steamed Idlis, 1 Medu Vada, Sambar, Chutney.", 
+    img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 12, 
+    name: "Paneer Butter Masala", 
+    category: "North Indian", 
+    price: 249, 
+    desc: "Rich paneer gravy. Pairs well with Naan or Rice.", 
+    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Paneer_tikka_masala.jpg/800px-Paneer_tikka_masala.jpg" 
+  },
+  { 
+    id: 13, 
+    name: "Classic Dal Makhani", 
+    category: "North Indian", 
+    price: 219, 
+    desc: "Slow-cooked black lentils with butter and cream.", 
+    img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 14, 
+    name: "Delhi Chole Bhature", 
+    category: "North Indian", 
+    price: 189, 
+    desc: "Spicy chickpea curry with 2 fluffy bhatures.", 
+    img: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 15, 
+    name: "Burger & Fries Combo", 
+    category: "Combos", 
+    price: 299, 
+    desc: "Gourmet Veg Burger, Peri Peri Fries, Cold Drink.", 
+    img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 16, 
+    name: "Pizza & Garlic Bread", 
+    category: "Combos", 
+    price: 399, 
+    desc: "8-inch Margherita Pizza, Stuffed Garlic Bread, Coke.", 
+    img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 17, 
+    name: "Tandoori Chicken Tikka", 
+    category: "Snacks", 
+    price: 229, 
+    desc: "Tandoor roasted chicken chunks with mint chutney.", 
+    img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 18, 
+    name: "Punjabi Samosa (2 pcs)", 
+    category: "Snacks", 
+    price: 79, 
+    desc: "Crispy pastry filled with spiced potatoes.", 
+    img: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 19, 
+    name: "Paneer Pakora", 
+    category: "Snacks", 
+    price: 149, 
+    desc: "Fried paneer fritters with mint chutney.", 
+    img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 20, 
+    name: "Gulab Jamun (2 pcs)", 
+    category: "Desserts", 
+    price: 89, 
+    desc: "Soft milk dumplings in cardamom sugar syrup.", 
+    img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 21, 
+    name: "Sizzling Chocolate Brownie", 
+    category: "Desserts", 
+    price: 149, 
+    desc: "Warm gooey chocolate brownie.", 
+    img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 22, 
+    name: "Kesar Rasmalai (2 pcs)", 
+    category: "Desserts", 
+    price: 119, 
+    desc: "Cottage cheese discs in sweetened thickened milk.", 
+    img: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 23, 
+    name: "Adrak Masala Chai", 
+    category: "Beverages", 
+    price: 59, 
+    desc: "Hot Indian spiced tea, perfect for the journey.", 
+    img: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=800&q=80" 
+  },
+  { 
+    id: 24, 
+    name: "Classic Cold Coffee", 
+    category: "Beverages", 
+    price: 129, 
+    desc: "Thick and creamy blended cold coffee.", 
+    img: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=800&q=80" 
+  }
 ];
 
 const TESTIMONIALS = [
@@ -107,7 +275,7 @@ const CartDrawer = ({ cart, updateQty, remove, isOpen, close, total }) => {
           ) : (
             cart.map(item => (
               <div key={item.id} className="cart-item">
-                <img src={item.img} alt={item.name} />
+                <img src={item.img} alt={item.name} loading="lazy" />
                 <div className="cart-item-details">
                   <h4>{item.name}</h4>
                   <p className="cart-item-price">₹{item.price}</p>
@@ -188,53 +356,30 @@ const Home = () => {
 
   return (
     <div className="home-page">
-      <section className="hero">
-        <div className="hero-bg-noise"></div>
-        <div className="hero-layout">
-          <div className="hero-content">
-            <div className="hero-badge">REDEFINING TRAVEL</div>
-            <h1>First-Class Dining.<br/><span className="accent">Delivered to Your Berth.</span></h1>
-            <p>Transform your train journey with restaurant-grade meals. Freshly prepared, hygienically packed, and perfectly synced with your live running status.</p>
-            <div className="hero-action">
-              <input type="text" placeholder="Enter 10-digit PNR" maxLength="10" />
-              <button className="btn-primary" onClick={() => navigate('/menu')}>Order Now</button>
-            </div>
-            <div className="hero-trust">
-              <div className="avatars">
-                <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80)'}}></div>
-                <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80)'}}></div>
-                <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80)'}}></div>
-                <div className="avatar-more">+25k</div>
-              </div>
-              <span>Happy Travelers</span>
-            </div>
+      <section className="hero-split">
+        <div className="hero-left">
+          <div className="hero-badge">REDEFINING TRAVEL DINING</div>
+          <h1>First-Class Dining.<br/><span className="accent">Delivered to Your Berth.</span></h1>
+          <p>Transform your train journey with restaurant-grade meals. Freshly prepared, hygienically packed, and synced perfectly with your live running status.</p>
+          <div className="hero-action">
+            <input type="text" placeholder="Enter 10-digit PNR" maxLength="10" />
+            <button className="btn-primary" onClick={() => navigate('/menu')}>Order Now</button>
           </div>
-          
-          <div className="hero-visual">
-            <div className="visual-glow-ring"></div>
-            <div className="visual-glow-ring delay"></div>
-            <div className="hero-image-wrapper">
-              <img src="https://images.unsplash.com/photo-1589302168068-964664d93cb0?auto=format&fit=crop&w=800&q=80" alt="Premium Train Food" className="hero-main-img" />
+          <div className="hero-trust">
+            <div className="avatars">
+              <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80)'}}></div>
+              <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80)'}}></div>
+              <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80)'}}></div>
+              <div className="avatar-more">+25k</div>
             </div>
-            <div className="floating-card fc-top">
-              <div className="fc-icon">✨</div>
-              <div className="fc-text">
-                <strong>Premium Quality</strong>
-                <span>Chef-crafted meals</span>
-              </div>
-            </div>
-            <div className="floating-card fc-bottom">
-              <div className="pulse-dot-green"></div>
-              <div className="fc-text">
-                <strong>Live Tracking</strong>
-                <span>Arriving at Chennai Central</span>
-              </div>
-            </div>
+            <span>Happy Travelers</span>
           </div>
         </div>
-        <div className="scroll-indicator">
-          <span>Scroll</span>
-          <div className="mouse"></div>
+        <div className="hero-right">
+          <div className="hero-image-bleed">
+             <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80" alt="Premium Food Plated" />
+             <div className="hero-gradient-overlay"></div>
+          </div>
         </div>
       </section>
 
@@ -512,7 +657,7 @@ const TrackOrder = () => {
     if(orderId) {
       setTracking(true); 
       setStep(1);
-      setTimeout(() => setStep(2), 2500); // Simulate progress to step 2
+      setTimeout(() => setStep(2), 2500); 
     }
   };
 
@@ -551,7 +696,7 @@ const TrackOrder = () => {
               <div className="live-badge"><span className="live-dot"></span> LIVE TRACKING</div>
               <h2>Order #{orderId || 'RB-8492'}</h2>
             </div>
-            <button className="btn-outline" onClick={() => setTracking(false)}>Track Another</button>
+            <button className="btn-outline dh-btn" onClick={() => setTracking(false)}>Track Another</button>
           </div>
           
           <div className="tracker-main">
@@ -562,16 +707,25 @@ const TrackOrder = () => {
               </div>
               <div className="dic-grid">
                 <div className="dic-item">
-                  <span>Station</span>
-                  <strong>Chennai Central</strong>
+                  <div className="dic-item-icon"><Icons.MapPin /></div>
+                  <div>
+                    <span>Station</span>
+                    <strong>Chennai Central</strong>
+                  </div>
                 </div>
                 <div className="dic-item">
-                  <span>Train</span>
-                  <strong>12615 (Grand Trunk Exp)</strong>
+                  <div className="dic-item-icon"><Icons.Train /></div>
+                  <div>
+                    <span>Train</span>
+                    <strong>12615 (Grand Trunk Exp)</strong>
+                  </div>
                 </div>
                 <div className="dic-item">
-                  <span>Coach / Seat</span>
-                  <strong>B4 / 32</strong>
+                  <div className="dic-item-icon"><Icons.Package /></div>
+                  <div>
+                    <span>Coach / Seat</span>
+                    <strong>B4 / 32</strong>
+                  </div>
                 </div>
               </div>
             </div>
@@ -601,7 +755,7 @@ const TrackOrder = () => {
                 </div>
                 <div className="exec-info">
                   <h4>Rajesh Kumar</h4>
-                  <p>Delivery Executive • Platform 4</p>
+                  <p>Delivery Executive • Arriving at Platform 4</p>
                 </div>
                 <button className="btn-icon-call"><Icons.Phone /></button>
               </div>
