@@ -1,353 +1,713 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
-import { restaurants, popularMeals } from './data';
 
-// --- Icons (SVG) ---
-const TrainIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="3" width="12" height="18" rx="2" /><path d="M9 3v18" /><path d="M15 3v18" /><path d="M6 8h12" /><path d="M6 13h12" /></svg>;
-const SearchIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
-const StarIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffb703" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>;
+// --- DATA ---
+const STATIONS = [
+  "Chennai Central", "Bangalore City", "Hyderabad Deccan", "Mumbai CST", 
+  "Delhi Junction", "Coimbatore", "Madurai", "Vijayawada", "Pune", 
+  "Kolkata", "Ahmedabad", "Jaipur", "Lucknow", "Bhopal", "Kochi"
+];
 
-// --- Components ---
+// Expanded and verified food menu with highly reliable Unsplash image IDs
+const MENU_ITEMS = [
+  { id: 1, name: "Premium Veg Thali", category: "Veg Meals", price: 249, desc: "Dal Makhani, Shahi Paneer, Mix Veg, Rice, 3 Roti, Sweet.", img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=600&q=80" },
+  { id: 2, name: "Homestyle Veg Meal", category: "Veg Meals", price: 189, desc: "Dal Tadka, Aloo Jeera, Steamed Rice, 3 Phulkas.", img: "https://images.unsplash.com/photo-1626779471138-03822161f38e?auto=format&fit=crop&w=600&q=80" },
+  { id: 3, name: "Executive Veg Meal", category: "Veg Meals", price: 299, desc: "Paneer Butter Masala, Veg Kadai, Pulao, 2 Parathas, Raita, Gulab Jamun.", img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80" },
+  { id: 4, name: "Premium Chicken Thali", category: "Non-Veg Meals", price: 349, desc: "Butter Chicken, Chicken Curry, Pulao, 3 Roti, Dessert.", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=600&q=80" },
+  { id: 5, name: "Fish Curry Thali", category: "Non-Veg Meals", price: 379, desc: "Coastal Fish Curry, Steamed Rice, Fish Fry, Papad.", img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=600&q=80" },
+  { id: 6, name: "Mutton Rogan Josh", category: "Non-Veg Meals", price: 399, desc: "Rich mutton gravy with 2 Butter Naan and Salad.", img: "https://images.unsplash.com/photo-1544025162-831e5055b85e?auto=format&fit=crop&w=600&q=80" },
+  { id: 7, name: "Hyderabadi Chicken Biryani", category: "Biryani Specials", price: 329, desc: "Authentic dum biryani cooked with tender chicken pieces.", img: "https://images.unsplash.com/photo-1563128928-168b016f73c6?auto=format&fit=crop&w=600&q=80" },
+  { id: 8, name: "Mutton Biryani", category: "Biryani Specials", price: 429, desc: "Rich and flavorful mutton biryani served with raita.", img: "https://images.unsplash.com/photo-1631515243349-e0cb4c114324?auto=format&fit=crop&w=600&q=80" },
+  { id: 9, name: "Paneer Tikka Biryani", category: "Biryani Specials", price: 279, desc: "Smoky paneer tikka layered with aromatic basmati rice.", img: "https://images.unsplash.com/photo-1564834724105-918b73d1b9e0?auto=format&fit=crop&w=600&q=80" },
+  { id: 10, name: "Masala Dosa", category: "South Indian", price: 149, desc: "Crispy crepe served with Sambar and 3 types of Chutney.", img: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?auto=format&fit=crop&w=600&q=80" },
+  { id: 11, name: "Idli Vada Combo", category: "South Indian", price: 129, desc: "2 Steamed Idlis, 1 Medu Vada, Sambar, Chutney.", img: "https://images.unsplash.com/photo-1626779471343-a65c2b0c3f59?auto=format&fit=crop&w=600&q=80" },
+  { id: 12, name: "Paneer Butter Masala", category: "North Indian", price: 249, desc: "Rich paneer gravy. Pairs well with Naan or Rice.", img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80" },
+  { id: 13, name: "Dal Makhani", category: "North Indian", price: 219, desc: "Slow-cooked black lentils with butter and cream.", img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80" },
+  { id: 14, name: "Chole Bhature", category: "North Indian", price: 189, desc: "Spicy chickpea curry with 2 fluffy bhatures.", img: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=600&q=80" },
+  { id: 15, name: "Burger & Fries Combo", category: "Combos", price: 299, desc: "Gourmet Veg Burger, Peri Peri Fries, Cold Drink.", img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=600&q=80" },
+  { id: 16, name: "Pizza & Garlic Bread", category: "Combos", price: 399, desc: "8-inch Margherita Pizza, Stuffed Garlic Bread, Coke.", img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80" },
+  { id: 17, name: "Chicken Tikka", category: "Snacks", price: 229, desc: "Tandoor roasted chicken chunks with mint chutney.", img: "https://images.unsplash.com/photo-1599487405270-8e100f864147?auto=format&fit=crop&w=600&q=80" },
+  { id: 18, name: "Samosa (2 pcs)", category: "Snacks", price: 79, desc: "Crispy pastry filled with spiced potatoes.", img: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80" },
+  { id: 19, name: "Paneer Pakora", category: "Snacks", price: 149, desc: "Fried paneer fritters with mint chutney.", img: "https://images.unsplash.com/photo-1554978991-34440c49ba7c?auto=format&fit=crop&w=600&q=80" },
+  { id: 20, name: "Gulab Jamun (2 pcs)", category: "Desserts", price: 89, desc: "Soft milk dumplings in cardamom sugar syrup.", img: "https://images.unsplash.com/photo-1551024506-0cb4a1cb1c76?auto=format&fit=crop&w=600&q=80" },
+  { id: 21, name: "Chocolate Brownie", category: "Desserts", price: 149, desc: "Warm gooey chocolate brownie.", img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80" },
+  { id: 22, name: "Rasmalai (2 pcs)", category: "Desserts", price: 119, desc: "Cottage cheese discs in sweetened thickened milk.", img: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=600&q=80" },
+  { id: 23, name: "Masala Chai", category: "Beverages", price: 59, desc: "Hot Indian spiced tea, perfect for the journey.", img: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=600&q=80" },
+  { id: 24, name: "Cold Coffee", category: "Beverages", price: 129, desc: "Thick and creamy blended cold coffee.", img: "https://images.unsplash.com/photo-1461023058943-0708e526a72e?auto=format&fit=crop&w=600&q=80" }
+];
 
-const Navbar = ({ cartCount, onNavigate, activePage }) => (
-  <nav className="navbar glass-panel">
-    <div className="container flex justify-between items-center">
-      <div className="logo text-primary cursor-pointer" onClick={() => onNavigate('home')}>
-        Rail<span className="text-main">Bites</span>
-      </div>
+const TESTIMONIALS = [
+  { name: "Rahul M.", route: "Chennai to Delhi", text: "The Hyderabadi Biryani was hot and incredibly flavorful. Best train meal I've ever had. Packaging was premium." },
+  { name: "Ananya S.", route: "Bangalore to Pune", text: "Seamless experience. The delivery guy found my seat exactly on time. Food quality matches top-tier restaurants." },
+  { name: "Vikram D.", route: "Mumbai to Ahmedabad", text: "Finally a startup solving the train food problem elegantly. The app tracking works perfectly. Highly recommended." },
+  { name: "Sneha P.", route: "Jaipur to Delhi", text: "Ordered the Executive Thali. It arrived piping hot and the portions were generous. Will order again!" }
+];
+
+const CATEGORIES = [...new Set(MENU_ITEMS.map(item => item.category))];
+
+// --- ICONS (SVG) ---
+const Icons = {
+  Shield: () => <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>,
+  Clock: () => <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+  Flame: () => <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"></path></svg>,
+  Track: () => <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"></path><path d="M2 12h20"></path></svg>,
+  ChevronLeft: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>,
+  ChevronRight: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>,
+  MapPin: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>,
+  Mail: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>,
+  Phone: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>,
+  Train: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="3" width="16" height="16" rx="2" ry="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path><path d="M8 19l-2 3"></path><path d="M16 19l2 3"></path><path d="M8 15h.01"></path><path d="M16 15h.01"></path></svg>,
+  CheckCircle: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>,
+  Package: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+};
+
+// --- UTILS ---
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+};
+
+// --- COMPONENTS ---
+const Navbar = ({ cartCount, toggleCart }) => (
+  <nav className="navbar">
+    <div className="nav-container">
+      <Link to="/" className="logo">Rail<span>Bites</span></Link>
       <div className="nav-links">
-        <a href="#" onClick={() => onNavigate('home')} className={activePage === 'home' ? 'active' : ''}>Home</a>
-        <a href="#" onClick={() => onNavigate('restaurants')} className={activePage === 'restaurants' ? 'active' : ''}>Restaurants</a>
-        <a href="#" onClick={() => onNavigate('tracking')} className={activePage === 'tracking' ? 'active' : ''}>Track Order</a>
+        <Link to="/">Home</Link>
+        <Link to="/menu">Menu</Link>
+        <Link to="/track">Track</Link>
+        <Link to="/contact">Contact</Link>
       </div>
-      <button className="btn btn-outline" onClick={() => onNavigate('cart')}>
-        Cart ({cartCount})
+      <button className="cart-btn" onClick={toggleCart}>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 01-8 0"></path></svg>
+        {cartCount > 0 && <span className="cart-badge">{cartCount}</span>}
       </button>
     </div>
   </nav>
 );
 
-const LandingPage = ({ onNavigate, addToCart }) => (
-  <>
-    <section className="hero">
-      <div className="container">
-        <h1>Premium Food Delivered<br />to Your <span className="text-primary">Train Seat</span></h1>
-        <p className="text-muted" style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>
-          Enter your PNR to explore restaurants delivering to upcoming stations.
-        </p>
-        
-        <div className="pnr-search glass-panel">
-          <input type="text" placeholder="Enter 10-digit PNR Number" className="pnr-input" maxLength="10" />
-          <select className="pnr-input" style={{ borderLeft: '1px solid rgba(255,255,255,0.1)' }}>
-             <option>Bangalore City (SBC)</option>
-             <option>Chennai Central (MAS)</option>
-             <option>Katpadi Jn (KPD)</option>
-          </select>
-          <button className="btn btn-primary" onClick={() => onNavigate('restaurants')}>
-             Find Food
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section className="container" style={{ padding: '60px 0' }}>
-      <h2 className="section-title">Featured Restaurants</h2>
-      <div className="grid grid-3">
-        {restaurants.slice(0, 3).map(rest => (
-          <div key={rest.id} className="glass-card">
-            <img src={rest.image} alt={rest.name} className="card-image" />
-            <div className="card-body">
-              <div className="flex justify-between items-center mb-2">
-                <h3>{rest.name}</h3>
-                <span className="badge" style={{background: '#fff', color: '#000'}}>{rest.rating} <StarIcon/></span>
-              </div>
-              <p className="text-muted text-sm">{rest.cuisine}</p>
-              <div className="flex justify-between items-center mt-3">
-                 <span className="text-accent text-sm">⏱ {rest.time}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <section className="container" style={{ padding: '60px 0' }}>
-      <h2 className="section-title">Popular Quick Bites</h2>
-      <div className="grid grid-4">
-        {popularMeals.slice(0, 4).map(item => (
-          <div key={item.id} className="glass-card card-body flex flex-col justify-between">
-             <div>
-                <div className="flex justify-between">
-                  <span className={`badge ${item.veg ? 'veg' : 'non-veg'}`}>
-                     {item.veg ? 'VEG' : 'NON-VEG'}
-                  </span>
-                </div>
-                <h4 style={{ marginTop: '10px' }}>{item.name}</h4>
-                <p className="text-muted">₹{item.price}</p>
-             </div>
-             <button className="btn btn-outline mt-3 w-full" onClick={() => addToCart(item)}>Add</button>
-          </div>
-        ))}
-      </div>
-    </section>
-
-    <section className="container" style={{ padding: '80px 0', textAlign: 'center' }}>
-       <h2 className="section-title" style={{ border: 'none' }}>How It Works</h2>
-       <div className="grid grid-3">
-          <div className="glass-panel" style={{ padding: '40px' }}>
-             <div className="text-primary text-4xl mb-4">01</div>
-             <h3>Enter PNR</h3>
-             <p className="text-muted">We auto-detect your train and seat details.</p>
-          </div>
-          <div className="glass-panel" style={{ padding: '40px' }}>
-             <div className="text-primary text-4xl mb-4">02</div>
-             <h3>Order Food</h3>
-             <p className="text-muted">Choose from top rated restaurants on your route.</p>
-          </div>
-          <div className="glass-panel" style={{ padding: '40px' }}>
-             <div className="text-primary text-4xl mb-4">03</div>
-             <h3>Delivery at Seat</h3>
-             <p className="text-muted">Contactless delivery right to your berth.</p>
-          </div>
-       </div>
-    </section>
-  </>
-);
-
-const RestaurantPage = ({ addToCart }) => (
-  <div className="container layout-split">
-    <aside className="glass-panel" style={{ padding: '20px', height: 'fit-content', position: 'sticky', top: '100px' }}>
-      <h3 className="mb-4">Filters</h3>
-      <div className="filter-group">
-         <label><input type="checkbox" /> Pure Veg</label>
-         <label><input type="checkbox" /> 4+ Rating</label>
-         <label><input type="checkbox" /> Under ₹300</label>
-      </div>
-      <h3 className="mb-4 mt-6">Cuisines</h3>
-      <div className="filter-group">
-         <label><input type="checkbox" /> North Indian</label>
-         <label><input type="checkbox" /> South Indian</label>
-         <label><input type="checkbox" /> Chinese</label>
-         <label><input type="checkbox" /> Biryani</label>
-      </div>
-    </aside>
-    
-    <main>
-      <div className="flex justify-between items-center mb-6">
-        <h2>All Restaurants (Bangalore City)</h2>
-        <select className="glass-panel" style={{ padding: '8px', color: 'white', border: '1px solid var(--border)' }}>
-          <option>Sort by: Popularity</option>
-          <option>Delivery Time</option>
-          <option>Rating</option>
-        </select>
-      </div>
-      
-      <div className="grid grid-1" style={{ gap: '20px' }}>
-        {restaurants.map(rest => (
-           <div key={rest.id} className="glass-card flex" style={{ flexDirection: 'row', overflow: 'hidden' }}>
-              <img src={rest.image} style={{ width: '200px', objectFit: 'cover' }} alt={rest.name}/>
-              <div className="card-body flex-1">
-                 <div className="flex justify-between">
-                    <h3>{rest.name}</h3>
-                    <span className="badge" style={{background: '#fff', color: '#000'}}>{rest.rating} <StarIcon/></span>
-                 </div>
-                 <p className="text-muted">{rest.cuisine}</p>
-                 <hr style={{ borderColor: 'var(--border)', margin: '15px 0' }} />
-                 <p className="text-sm mb-4">Popular Items:</p>
-                 <div className="grid grid-3" style={{ gap: '10px' }}>
-                    {popularMeals.filter(m => m.restId === rest.id || m.restId === 4).slice(0,2).map(meal => (
-                       <div key={meal.id} className="flex justify-between items-center" style={{ background: 'rgba(255,255,255,0.05)', padding: '8px', borderRadius: '8px' }}>
-                          <div className="text-sm">
-                             <div>{meal.name}</div>
-                             <div className="text-muted">₹{meal.price}</div>
-                          </div>
-                          <button className="btn-primary" style={{ padding: '4px 10px', fontSize: '0.8rem' }} onClick={() => addToCart(meal)}>+</button>
-                       </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        ))}
-      </div>
-    </main>
-  </div>
-);
-
-const CartPage = ({ cart, onNavigate, setCart }) => {
-  const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const gst = subtotal * 0.05;
-  const delivery = 40;
-  const total = subtotal + gst + delivery;
-
+const CartDrawer = ({ cart, updateQty, remove, isOpen, close, total }) => {
+  const navigate = useNavigate();
   return (
-    <div className="container layout-split">
-      <div className="cart-list">
-        <h2 className="mb-6">Your Order</h2>
-        {cart.length === 0 ? (
-          <div className="glass-panel p-6 text-center text-muted" style={{ padding: '40px' }}>
-            Cart is empty. Go add some food!
-          </div>
-        ) : (
-          <div className="glass-panel" style={{ padding: '20px' }}>
-            {cart.map(item => (
-              <div key={item.id} className="cart-item items-center">
-                 <div>
-                    <span className={`badge ${item.veg ? 'veg' : 'non-veg'}`}>{item.veg ? 'V' : 'N'}</span>
-                    <span style={{ marginLeft: '10px', fontWeight: '500' }}>{item.name}</span>
-                 </div>
-                 <div className="flex items-center">
-                    <span className="text-muted mr-4">₹{item.price * item.qty}</span>
-                    <div className="flex items-center glass-panel" style={{ padding: '0', borderRadius: '4px' }}>
-                       <button className="btn text-white" style={{ padding: '4px 10px' }} onClick={() => {
-                         const newCart = cart.map(i => i.id === item.id ? {...i, qty: i.qty - 1} : i).filter(i => i.qty > 0);
-                         setCart(newCart);
-                       }}>-</button>
-                       <span style={{ padding: '0 8px' }}>{item.qty}</span>
-                       <button className="btn text-white" style={{ padding: '4px 10px' }} onClick={() => {
-                         const newCart = cart.map(i => i.id === item.id ? {...i, qty: i.qty + 1} : i);
-                         setCart(newCart);
-                       }}>+</button>
-                    </div>
-                 </div>
+    <>
+      <div className={`cart-overlay ${isOpen ? 'open' : ''}`} onClick={close}></div>
+      <div className={`cart-drawer ${isOpen ? 'open' : ''}`}>
+        <div className="cart-header">
+          <h2>Your Order</h2>
+          <button onClick={close} className="close-btn">&times;</button>
+        </div>
+        <div className="cart-body">
+          {cart.length === 0 ? (
+            <div className="empty-cart">
+              <p>Your cart is empty.</p>
+              <button className="btn-secondary" onClick={() => { close(); navigate('/menu'); }}>Browse Menu</button>
+            </div>
+          ) : (
+            cart.map(item => (
+              <div key={item.id} className="cart-item">
+                <img src={item.img} alt={item.name} />
+                <div className="cart-item-details">
+                  <h4>{item.name}</h4>
+                  <p className="cart-item-price">₹{item.price}</p>
+                  <div className="qty-controls">
+                    <button onClick={() => updateQty(item.id, -1)}>-</button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => updateQty(item.id, 1)}>+</button>
+                  </div>
+                </div>
+                <button className="remove-btn" onClick={() => remove(item.id)}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path></svg>
+                </button>
               </div>
-            ))}
+            ))
+          )}
+        </div>
+        {cart.length > 0 && (
+          <div className="cart-footer">
+            <div className="cart-total">
+              <span>Subtotal</span>
+              <span>₹{total}</span>
+            </div>
+            <button className="btn-primary full-width" onClick={() => { close(); navigate('/checkout'); }}>
+              Proceed to Checkout
+            </button>
           </div>
         )}
       </div>
+    </>
+  );
+};
 
-      <div className="checkout-summary">
-        <div className="glass-card" style={{ padding: '24px' }}>
-           <h3 className="mb-4">Train Details</h3>
-           <div className="text-sm text-muted mb-4 p-3" style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
-              <div className="flex justify-between mb-2"><span>Train:</span> <span className="text-white">Chennai Express (12610)</span></div>
-              <div className="flex justify-between mb-2"><span>Coach/Seat:</span> <span className="text-white">B2 / 36</span></div>
-              <div className="flex justify-between"><span>Station:</span> <span className="text-primary">Bangalore City</span></div>
-           </div>
+const Footer = () => (
+  <footer className="footer">
+    <div className="footer-glow"></div>
+    <div className="footer-content">
+      <div className="footer-brand">
+        <h2>Rail<span>Bites</span></h2>
+        <p>Premium railway dining for modern travelers. Confident. Elevated.</p>
+      </div>
+      <div className="footer-links">
+        <h4>Explore</h4>
+        <Link to="/">Home</Link>
+        <Link to="/menu">Menu</Link>
+        <Link to="/track">Track Order</Link>
+        <Link to="/contact">Contact</Link>
+      </div>
+      <div className="footer-links">
+        <h4>Legal</h4>
+        <a href="#!">Terms of Service</a>
+        <a href="#!">Privacy Policy</a>
+        <a href="#!">FSSAI License</a>
+      </div>
+      <div className="footer-contact">
+        <h4>Contact</h4>
+        <p>support@railbites.com</p>
+        <p>+91 98765 43210</p>
+      </div>
+    </div>
+    <div className="footer-bottom">
+      <p>&copy; {new Date().getFullYear()} RailBites. All rights reserved.</p>
+    </div>
+  </footer>
+);
 
-           <h3 className="mb-4">Bill Details</h3>
-           <div className="summary-row"><span>Item Total</span> <span>₹{subtotal}</span></div>
-           <div className="summary-row"><span>GST (5%)</span> <span>₹{gst.toFixed(2)}</span></div>
-           <div className="summary-row"><span>Delivery Fee</span> <span>₹{delivery}</span></div>
-           <div className="total-row"><span>To Pay</span> <span>₹{total.toFixed(2)}</span></div>
+// --- PAGES ---
+const Home = () => {
+  const navigate = useNavigate();
+  const scrollRef = useRef(null);
 
-           <button className="btn btn-primary w-full mt-6" style={{ width: '100%' }} onClick={() => onNavigate('tracking')}>
-              PROCEED TO PAY
-           </button>
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const { current } = scrollRef;
+      const scrollAmount = direction === 'left' ? -400 : 400;
+      current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
+
+  return (
+    <div className="home-page">
+      <section className="hero">
+        <div className="hero-bg-noise"></div>
+        <div className="hero-layout">
+          <div className="hero-content">
+            <div className="hero-badge">REDEFINING TRAVEL</div>
+            <h1>First-Class Dining.<br/><span className="accent">Delivered to Your Berth.</span></h1>
+            <p>Transform your train journey with restaurant-grade meals. Freshly prepared, hygienically packed, and perfectly synced with your live running status.</p>
+            <div className="hero-action">
+              <input type="text" placeholder="Enter 10-digit PNR" maxLength="10" />
+              <button className="btn-primary" onClick={() => navigate('/menu')}>Order Now</button>
+            </div>
+            <div className="hero-trust">
+              <div className="avatars">
+                <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80)'}}></div>
+                <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80)'}}></div>
+                <div className="avatar" style={{backgroundImage: 'url(https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80)'}}></div>
+                <div className="avatar-more">+25k</div>
+              </div>
+              <span>Happy Travelers</span>
+            </div>
+          </div>
+          
+          <div className="hero-visual">
+            <div className="visual-glow-ring"></div>
+            <div className="visual-glow-ring delay"></div>
+            <div className="hero-image-wrapper">
+              <img src="https://images.unsplash.com/photo-1589302168068-964664d93cb0?auto=format&fit=crop&w=800&q=80" alt="Premium Train Food" className="hero-main-img" />
+            </div>
+            <div className="floating-card fc-top">
+              <div className="fc-icon">✨</div>
+              <div className="fc-text">
+                <strong>Premium Quality</strong>
+                <span>Chef-crafted meals</span>
+              </div>
+            </div>
+            <div className="floating-card fc-bottom">
+              <div className="pulse-dot-green"></div>
+              <div className="fc-text">
+                <strong>Live Tracking</strong>
+                <span>Arriving at Chennai Central</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="scroll-indicator">
+          <span>Scroll</span>
+          <div className="mouse"></div>
+        </div>
+      </section>
+
+      <section className="social-proof">
+        <div className="proof-item">
+          <h3>4.8★</h3>
+          <p>Average Rating</p>
+        </div>
+        <div className="proof-item">
+          <h3>25K+</h3>
+          <p>Orders Delivered</p>
+        </div>
+        <div className="proof-item">
+          <h3>100%</h3>
+          <p>FSSAI Certified</p>
+        </div>
+        <div className="proof-item">
+          <h3>15+</h3>
+          <p>Major Stations</p>
+        </div>
+      </section>
+
+      <section className="section signature-dishes">
+        <div className="section-header-row">
+          <h2 className="section-title">Signature Dishes</h2>
+          <div className="scroll-buttons">
+            <button className="icon-btn" onClick={() => scroll('left')} aria-label="Scroll Left"><Icons.ChevronLeft /></button>
+            <button className="icon-btn" onClick={() => scroll('right')} aria-label="Scroll Right"><Icons.ChevronRight /></button>
+          </div>
+        </div>
+        
+        <div className="horizontal-scroll-container">
+          <div className="horizontal-scroll" ref={scrollRef}>
+            {MENU_ITEMS.slice(0, 6).map(item => (
+              <div key={item.id} className="signature-card">
+                <div className="sig-img-wrapper">
+                  <div className="img-overlay"></div>
+                  <img src={item.img} alt={item.name} loading="lazy" />
+                  <span className="sig-badge">{item.category}</span>
+                </div>
+                <div className="sig-info">
+                  <h4>{item.name}</h4>
+                  <p className="sig-desc">{item.desc}</p>
+                  <div className="sig-bottom">
+                    <span className="price">₹{item.price}</span>
+                    <button className="btn-add-circle" onClick={() => navigate('/menu')}>+</button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section why-choose">
+        <div className="glow-orb left"></div>
+        <h2 className="section-title">The RailBites Standard</h2>
+        <div className="features-bento">
+          <div className="bento-card">
+            <div className="icon-wrapper"><Icons.Shield /></div>
+            <h4>Hygienic Packaging</h4>
+            <p>Spill-proof, premium food-grade containers ensuring your meal stays fresh, hot, and secure.</p>
+          </div>
+          <div className="bento-card">
+            <div className="icon-wrapper"><Icons.Clock /></div>
+            <h4>On-Time Delivery</h4>
+            <p>Syncs directly with live train running status. We wait for you, not the other way around.</p>
+          </div>
+          <div className="bento-card">
+            <div className="icon-wrapper"><Icons.Flame /></div>
+            <h4>Freshly Prepared</h4>
+            <p>Meals cooked exclusively for your order at our state-of-the-art FSSAI-certified base kitchens.</p>
+          </div>
+          <div className="bento-card">
+            <div className="icon-wrapper"><Icons.Track /></div>
+            <h4>Live Tracking</h4>
+            <p>Watch your order move from our kitchen right to your berth in real-time on our platform.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="section stations">
+        <div className="glow-orb right"></div>
+        <h2 className="section-title">Stations We Serve</h2>
+        <div className="stations-premium-grid">
+          {STATIONS.map((station, idx) => (
+            <div key={idx} className="station-glass-card">
+              <div className="station-glow-hover"></div>
+              <div className="station-content">
+                <div className="station-icon-box"><Icons.MapPin /></div>
+                <span className="station-name">{station}</span>
+                <div className="station-status"><span className="status-dot"></span>Active</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="section testimonials-section">
+        <h2 className="section-title">Traveler Stories</h2>
+        <div className="marquee-wrapper">
+          <div className="marquee-content">
+            {[...TESTIMONIALS, ...TESTIMONIALS].map((test, idx) => (
+              <div key={idx} className="test-card">
+                <div className="quote-mark">"</div>
+                <div className="stars">★★★★★</div>
+                <p>{test.text}</p>
+                <div className="test-author">
+                  <h5>{test.name}</h5>
+                  <span>{test.route}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+const Menu = ({ cart, addToCart }) => {
+  const [activeCategory, setActiveCategory] = useState('All');
+  const filteredItems = activeCategory === 'All' ? MENU_ITEMS : MENU_ITEMS.filter(item => item.category === activeCategory);
+
+  return (
+    <div className="menu-page">
+      <div className="menu-header">
+        <h1>Curated Menu</h1>
+        <p>Expertly crafted meals for your journey</p>
+      </div>
+      <div className="category-tabs">
+        <button className={activeCategory === 'All' ? 'active' : ''} onClick={() => setActiveCategory('All')}>All</button>
+        {CATEGORIES.map(cat => (
+          <button key={cat} className={activeCategory === cat ? 'active' : ''} onClick={() => setActiveCategory(cat)}>{cat}</button>
+        ))}
+      </div>
+      <div className="menu-grid">
+        {filteredItems.map(item => {
+          const inCart = cart.find(c => c.id === item.id);
+          return (
+            <div key={item.id} className="menu-card">
+              <div className="menu-img">
+                <img src={item.img} alt={item.name} loading="lazy" />
+                <div className="menu-img-gradient"></div>
+                <span className="menu-cat-tag">{item.category}</span>
+              </div>
+              <div className="menu-info">
+                <h3>{item.name}</h3>
+                <p>{item.desc}</p>
+                <div className="menu-bottom">
+                  <span className="price">₹{item.price}</span>
+                  <button className={`btn-add ${inCart ? 'added' : ''}`} onClick={() => addToCart(item)}>
+                    {inCart ? `Added (${inCart.quantity})` : 'Add to Order'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const Checkout = ({ cart, total, clearCart }) => {
+  const navigate = useNavigate();
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleCheckout = (e) => {
+    e.preventDefault();
+    setIsSuccess(true);
+    setTimeout(() => { clearCart(); navigate('/track'); }, 3000);
+  };
+
+  if (cart.length === 0 && !isSuccess) {
+    return (
+      <div className="checkout-page empty-checkout">
+        <h2>Your cart is empty</h2>
+        <button className="btn-primary" onClick={() => navigate('/menu')}>Back to Menu</button>
+      </div>
+    );
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="checkout-page success-state">
+        <div className="success-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><path d="M22 4L12 14.01l-3-3"></path></svg>
+        </div>
+        <h2>Order Placed Successfully!</h2>
+        <p>Redirecting to live tracking...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="checkout-page">
+      <div className="checkout-split">
+        <div className="checkout-form-container">
+          <h2>Delivery Details</h2>
+          <form className="checkout-form" onSubmit={handleCheckout}>
+            <div className="form-group">
+              <label>PNR Number</label>
+              <input type="text" placeholder="10-digit PNR" required maxLength="10" />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Train Number</label>
+                <input type="text" placeholder="e.g. 12615" required />
+              </div>
+              <div className="form-group">
+                <label>Coach & Seat</label>
+                <input type="text" placeholder="e.g. B4 - 32" required />
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Station for Delivery</label>
+              <select required defaultValue="">
+                <option value="" disabled>Select Station</option>
+                {STATIONS.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Passenger Name</label>
+              <input type="text" placeholder="John Doe" required />
+            </div>
+            <div className="form-group">
+              <label>Phone Number</label>
+              <input type="tel" placeholder="+91 99999 99999" required />
+            </div>
+            <h3 className="payment-title">Payment Method</h3>
+            <div className="payment-options">
+              <label className="pay-option">
+                <input type="radio" name="payment" required defaultChecked />
+                <span>UPI</span>
+              </label>
+              <label className="pay-option">
+                <input type="radio" name="payment" required />
+                <span>Credit/Debit Card</span>
+              </label>
+            </div>
+            <button type="submit" className="btn-primary full-width submit-btn">
+              Pay ₹{total} & Place Order
+            </button>
+          </form>
+        </div>
+        <div className="checkout-summary">
+          <h2>Order Summary</h2>
+          <div className="summary-items">
+            {cart.map(item => (
+              <div key={item.id} className="summary-item">
+                <span>{item.quantity}x {item.name}</span>
+                <span>₹{item.price * item.quantity}</span>
+              </div>
+            ))}
+          </div>
+          <div className="summary-totals">
+            <div className="summary-line"><span>Subtotal</span><span>₹{total}</span></div>
+            <div className="summary-line"><span>Taxes & Fees</span><span>₹{Math.round(total * 0.05)}</span></div>
+            <div className="summary-line total-line"><span>Total</span><span className="accent">₹{total + Math.round(total * 0.05)}</span></div>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const TrackingPage = () => (
-  <div className="container">
-     <div className="tracker-container glass-card">
-        <div className="text-center mb-8">
-           <h2 className="mb-2">Order #RB9921 Confirmed</h2>
-           <p className="text-muted">Arriving at <span className="text-white">Bangalore City</span> in <span className="text-primary">32 mins</span></p>
-        </div>
+const TrackOrder = () => {
+  const [orderId, setOrderId] = useState('');
+  const [tracking, setTracking] = useState(false);
+  const [step, setStep] = useState(0);
 
-        <div className="step-indicator">
-           <div className="step completed">
-              <div className="step-circle">✓</div>
-              <div className="text-sm">Confirmed</div>
-           </div>
-           <div className="step active">
-              <div className="step-circle"><div className="live-status"></div></div>
-              <div className="text-sm">Preparing</div>
-           </div>
-           <div className="step">
-              <div className="step-circle">3</div>
-              <div className="text-sm">On Train</div>
-           </div>
-           <div className="step">
-              <div className="step-circle">4</div>
-              <div className="text-sm">Delivered</div>
-           </div>
-        </div>
-
-        <div className="glass-panel flex items-center p-4 mt-8" style={{ padding: '20px' }}>
-           <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#333', marginRight: '15px' }}>
-               {/* Avatar Placeholder */}
-               <img src="https://randomuser.me/api/portraits/men/32.jpg" style={{ width: '100%', borderRadius: '50%' }} alt="Rider"/>
-           </div>
-           <div>
-              <h4>Ramesh Kumar</h4>
-              <p className="text-muted text-sm">Delivery Partner • +91 98765 43210</p>
-           </div>
-           <button className="btn btn-outline" style={{ marginLeft: 'auto' }}>Call</button>
-        </div>
-     </div>
-  </div>
-);
-
-const Footer = () => (
-  <footer style={{ background: 'var(--bg-surface)', padding: '60px 0 20px', marginTop: 'auto', borderTop: '1px solid var(--border)' }}>
-     <div className="container grid grid-4 mb-8">
-        <div>
-           <div className="logo text-primary mb-4">Rail<span className="text-main">Bites</span></div>
-           <p className="text-muted text-sm">Premium food delivery for premium travelers. Experience the taste of luxury on wheels.</p>
-        </div>
-        <div>
-           <h4 className="mb-4">Company</h4>
-           <p className="text-muted text-sm mb-2">About Us</p>
-           <p className="text-muted text-sm mb-2">Careers</p>
-           <p className="text-muted text-sm">Team</p>
-        </div>
-        <div>
-           <h4 className="mb-4">Support</h4>
-           <p className="text-muted text-sm mb-2">Help & Support</p>
-           <p className="text-muted text-sm mb-2">Partner with us</p>
-           <p className="text-muted text-sm">Ride with us</p>
-        </div>
-        <div>
-           <h4 className="mb-4">Legal</h4>
-           <p className="text-muted text-sm mb-2">Terms & Conditions</p>
-           <p className="text-muted text-sm mb-2">Privacy Policy</p>
-        </div>
-     </div>
-     <div className="container text-center text-muted text-sm">
-        © 2024 RailBites Technologies Pvt Ltd. All rights reserved.
-     </div>
-  </footer>
-);
-
-// --- Main App ---
-
-function App() {
-  const [page, setPage] = useState('home');
-  const [cart, setCart] = useState([]);
-
-  // Scroll to top on page change
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [page]);
-
-  const addToCart = (item) => {
-    const existing = cart.find(x => x.id === item.id);
-    if (existing) {
-      setCart(cart.map(x => x.id === item.id ? {...existing, qty: existing.qty + 1} : x));
-    } else {
-      setCart([...cart, {...item, qty: 1}]);
+  const handleTrack = (e) => {
+    e.preventDefault();
+    if(orderId) {
+      setTracking(true); 
+      setStep(1);
+      setTimeout(() => setStep(2), 2500); // Simulate progress to step 2
     }
   };
 
-  const cartCount = cart.reduce((acc, item) => acc + item.qty, 0);
+  const steps = [
+    { title: "Order Confirmed", icon: <Icons.CheckCircle /> },
+    { title: "Food Preparation", icon: <Icons.Flame /> },
+    { title: "Out for Delivery", icon: <Icons.Package /> },
+    { title: "Delivered to Seat", icon: <Icons.Train /> }
+  ];
 
   return (
-    <div className="app-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar cartCount={cartCount} onNavigate={setPage} activePage={page} />
-      
-      <div style={{ flex: 1 }}>
-        {page === 'home' && <LandingPage onNavigate={setPage} addToCart={addToCart} />}
-        {page === 'restaurants' && <RestaurantPage addToCart={addToCart} />}
-        {page === 'cart' && <CartPage cart={cart} onNavigate={setPage} setCart={setCart} />}
-        {page === 'tracking' && <TrackingPage />}
-      </div>
+    <div className="track-page">
+      <div className="glow-orb center"></div>
+      {!tracking ? (
+        <div className="track-search-container">
+          <h1>Track Live Order</h1>
+          <p>Enter your 10-digit PNR or Order ID to see real-time status.</p>
+          <form className="track-form-large" onSubmit={handleTrack}>
+            <div className="track-input-wrapper">
+              <Icons.Track />
+              <input 
+                type="text" 
+                placeholder="PNR or Order ID..." 
+                value={orderId} 
+                onChange={(e) => setOrderId(e.target.value)} 
+                required 
+              />
+            </div>
+            <button type="submit" className="btn-primary">Track Order</button>
+          </form>
+        </div>
+      ) : (
+        <div className="tracking-dashboard">
+          <div className="dashboard-header">
+            <div className="dh-left">
+              <div className="live-badge"><span className="live-dot"></span> LIVE TRACKING</div>
+              <h2>Order #{orderId || 'RB-8492'}</h2>
+            </div>
+            <button className="btn-outline" onClick={() => setTracking(false)}>Track Another</button>
+          </div>
+          
+          <div className="tracker-main">
+            <div className="delivery-info-card">
+              <div className="dic-top">
+                <h3>Delivery Details</h3>
+                <span className="dic-eta">ETA: 01:30 PM</span>
+              </div>
+              <div className="dic-grid">
+                <div className="dic-item">
+                  <span>Station</span>
+                  <strong>Chennai Central</strong>
+                </div>
+                <div className="dic-item">
+                  <span>Train</span>
+                  <strong>12615 (Grand Trunk Exp)</strong>
+                </div>
+                <div className="dic-item">
+                  <span>Coach / Seat</span>
+                  <strong>B4 / 32</strong>
+                </div>
+              </div>
+            </div>
 
-      <Footer />
+            <div className="stepper-container">
+              <div className="stepper-progress-bar">
+                <div className="stepper-progress-fill" style={{ width: `${(step / (steps.length - 1)) * 100}%` }}></div>
+              </div>
+              
+              <div className="stepper-steps">
+                {steps.map((s, i) => (
+                  <div key={i} className={`step-item ${i <= step ? 'active' : ''} ${i === step ? 'current' : ''}`}>
+                    <div className="step-icon-wrapper">
+                      {s.icon}
+                      {i === step && <div className="step-pulse"></div>}
+                    </div>
+                    <div className="step-text">{s.title}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {step === 2 && (
+              <div className="executive-card">
+                <div className="exec-avatar">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Delivery Executive" />
+                </div>
+                <div className="exec-info">
+                  <h4>Rajesh Kumar</h4>
+                  <p>Delivery Executive • Platform 4</p>
+                </div>
+                <button className="btn-icon-call"><Icons.Phone /></button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-export default App;
+const Contact = () => {
+  return (
+    <div className="contact-page">
+      <div className="glow-orb left"></div>
+      <div className="contact-container">
+        <div className="contact-info">
+          <h1>Get in <span className="accent">Touch</span></h1>
+          <p>Have a question about your order, our services, or want to partner with us? We'd love to hear from you.</p>
+          
+          <div className="contact-methods">
+            <div className="method-card">
+              <div className="method-icon"><Icons.Mail /></div>
+              <div>
+                <h5>Email Us</h5>
+                <p>support@railbites.com</p>
+              </div>
+            </div>
+            <div className="method-card">
+              <div className="method-icon"><Icons.Phone /></div>
+              <div>
+                <h5>Call Us</h5>
+                <p>+91 98765 43210</p>
+              </div>
+            </div>
+            <div className="method-card">
+              <div className="method-icon"><Icons.MapPin /></div>
+              <div>
+                <h5>Headquarters</h5>
+                <p>123 Startup Hub, Taramani<br/>Chennai, TN 600113</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="contact-form-wrapper">
+          <form className="contact-form" onSubmit={(e) => e.preventDefault()}>
+            <div className="form-group">
+              <label>Full Name</label>
+              <input type="text" placeholder="John Doe" required />
+            </div>
+            <div className="form-group">
+              <label>Email Address</label>
+              <input type="email" placeholder="john@example.com" required />
+            </div>
+            <div className="form-group">
+              <label>Message</label>
+              <textarea placeholder="How can we help you?" rows="5" required></textarea>
+            </div>
+            <button type="submit" className="btn-primary full-width">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- MAIN APP ---
+export default function App() {
+  const [cart, setCart] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+
+  const addToCart = (item) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.id === item.id);
+      if (existing) return prev.map(i => i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { ...item, quantity: 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateQuantity = (id, delta) => setCart(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item).filter(i => i.quantity > 0));
+  const removeFromCart = (id) => setCart(prev => prev.filter(item => item.id !== id));
+  const clearCart = () => setCart([]);
+  const toggleCart = () => setIsCartOpen(!isCartOpen);
+
+  const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  return (
+    <BrowserRouter>
+      <ScrollToTop />
+      <div className="app-layout">
+        <Navbar cartCount={cartCount} toggleCart={toggleCart} />
+        <CartDrawer cart={cart} updateQty={updateQuantity} remove={removeFromCart} isOpen={isCartOpen} close={() => setIsCartOpen(false)} total={total} />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/menu" element={<Menu cart={cart} addToCart={addToCart} />} />
+            <Route path="/checkout" element={<Checkout cart={cart} total={total} clearCart={clearCart} />} />
+            <Route path="/track" element={<TrackOrder />} />
+            <Route path="/contact" element={<Contact />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
+    </BrowserRouter>
+  );
+}
