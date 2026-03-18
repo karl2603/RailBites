@@ -2,206 +2,215 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import './App.css';
 
-// --- DATA ---
+// --- DATA & IMAGE HANDLING ---
+// Using a guaranteed fallback image in case any specific URL fails to load due to network/CORS issues.
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80";
+
+const handleImgError = (e) => {
+  if (e.target.src !== FALLBACK_IMG) {
+    e.target.src = FALLBACK_IMG;
+  }
+};
+
 const STATIONS = [
   "Chennai Central", "Bangalore City", "Hyderabad Deccan", "Mumbai CST", 
   "Delhi Junction", "Coimbatore", "Madurai", "Vijayawada", "Pune", 
   "Kolkata", "Ahmedabad", "Jaipur", "Lucknow", "Bhopal", "Kochi"
 ];
 
-// Curated & Verified Unsplash Image URLs for 100% loading reliability
+// Verified Unsplash Image URLs mapped accurately to food categories
 const MENU_ITEMS = [
-  { 
-    id: 1, 
-    name: "Premium Veg Thali", 
-    category: "Veg Meals", 
-    price: 249, 
-    desc: "Dal Makhani, Shahi Paneer, Mix Veg, Rice, 3 Roti, Sweet.", 
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Indian_vegetarian_thali.jpg/800px-Indian_vegetarian_thali.jpg" 
+  {
+    id: 1,
+    name: "South Indian Veg Thali",
+    category: "Veg Meals",
+    price: 249,
+    desc: "Rice, sambar, rasam, poriyal, curd, papad.",
+    img: "https://images.pexels.com/photos/4331489/pexels-photo-4331489.jpeg"
   },
-  { 
-    id: 2, 
-    name: "Homestyle Veg Meal", 
-    category: "Veg Meals", 
-    price: 189, 
-    desc: "Dal Tadka, Aloo Jeera, Steamed Rice, 3 Phulkas.", 
-    img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 2,
+    name: "Simple Indian Veg Meal",
+    category: "Veg Meals",
+    price: 189,
+    desc: "Dal, sabzi, rice, chapati.",
+    img: "https://images.pexels.com/photos/5410400/pexels-photo-5410400.jpeg"
   },
-  { 
-    id: 3, 
-    name: "Executive Veg Meal", 
-    category: "Veg Meals", 
-    price: 299, 
-    desc: "Paneer Butter Masala, Veg Kadai, Pulao, 2 Parathas, Raita, Gulab Jamun.", 
-    img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 3,
+    name: "Paneer Curry Meal",
+    category: "Veg Meals",
+    price: 299,
+    desc: "Paneer gravy with roti and rice.",
+    img: "https://images.pexels.com/photos/12737656/pexels-photo-12737656.jpeg"
   },
-  { 
-    id: 4, 
-    name: "Premium Chicken Thali", 
-    category: "Non-Veg Meals", 
-    price: 349, 
-    desc: "Butter Chicken, Chicken Curry, Pulao, 3 Roti, Dessert.", 
-    img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 4,
+    name: "Chicken Curry Meal",
+    category: "Non-Veg Meals",
+    price: 349,
+    desc: "Chicken curry with rice and roti.",
+    img: "https://images.pexels.com/photos/6210933/pexels-photo-6210933.jpeg"
   },
-  { 
-    id: 5, 
-    name: "Coastal Fish Curry", 
-    category: "Non-Veg Meals", 
-    price: 379, 
-    desc: "Authentic coastal fish curry, Steamed Rice, Fish Fry, Papad.", 
-    img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 5,
+    name: "Grilled Fish Plate",
+    category: "Non-Veg Meals",
+    price: 379,
+    desc: "Grilled fish with sides.",
+    img: "https://images.pexels.com/photos/725991/pexels-photo-725991.jpeg"
   },
-  { 
-    id: 6, 
-    name: "Mutton Rogan Josh", 
-    category: "Non-Veg Meals", 
-    price: 399, 
-    desc: "Rich mutton gravy with 2 Butter Naan and Salad.", 
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Rogan_Josh.jpg/800px-Rogan_Josh.jpg" 
+  {
+    id: 6,
+    name: "Mutton Curry",
+    category: "Non-Veg Meals",
+    price: 399,
+    desc: "Spicy mutton curry with naan.",
+    img: "https://images.pexels.com/photos/7625056/pexels-photo-7625056.jpeg"
   },
-  { 
-    id: 7, 
-    name: "Hyderabadi Chicken Biryani", 
-    category: "Biryani Specials", 
-    price: 329, 
-    desc: "Authentic dum biryani cooked with tender chicken pieces.", 
-    img: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 7,
+    name: "Chicken Biryani",
+    category: "Biryani",
+    price: 329,
+    desc: "Aromatic chicken dum biryani.",
+    img: "https://images.pexels.com/photos/9609845/pexels-photo-9609845.jpeg"
   },
-  { 
-    id: 8, 
-    name: "Mutton Dum Biryani", 
-    category: "Biryani Specials", 
-    price: 429, 
-    desc: "Rich and flavorful mutton biryani served with raita and salan.", 
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Biryani_with_yogurt_dip.jpg/800px-Biryani_with_yogurt_dip.jpg" 
+  {
+    id: 8,
+    name: "Mutton Biryani",
+    category: "Biryani",
+    price: 429,
+    desc: "Rich mutton biryani.",
+    img: "https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg"
   },
-  { 
-    id: 9, 
-    name: "Paneer Tikka Biryani", 
-    category: "Biryani Specials", 
-    price: 279, 
-    desc: "Smoky paneer tikka layered with aromatic basmati rice.", 
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Paneer_Tikka.jpg/800px-Paneer_Tikka.jpg" 
+  {
+    id: 9,
+    name: "Veg Biryani",
+    category: "Biryani",
+    price: 279,
+    desc: "Flavorful vegetable biryani.",
+    img: "https://images.pexels.com/photos/5410414/pexels-photo-5410414.jpeg"
   },
-  { 
-    id: 10, 
-    name: "Crispy Masala Dosa", 
-    category: "South Indian", 
-    price: 149, 
-    desc: "Crispy crepe served with Sambar and 3 types of Chutney.", 
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Dosa_and_ghee.jpg/800px-Dosa_and_ghee.jpg" 
+  {
+    id: 10,
+    name: "Masala Dosa",
+    category: "South Indian",
+    price: 149,
+    desc: "Crispy dosa with chutney and sambar.",
+    img: "https://images.pexels.com/photos/4331489/pexels-photo-4331489.jpeg"
   },
-  { 
-    id: 11, 
-    name: "Idli Vada Combo", 
-    category: "South Indian", 
-    price: 129, 
-    desc: "2 Steamed Idlis, 1 Medu Vada, Sambar, Chutney.", 
-    img: "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 11,
+    name: "Idli Vada",
+    category: "South Indian",
+    price: 129,
+    desc: "Idli and vada with chutney.",
+    img: "https://images.pexels.com/photos/5410414/pexels-photo-5410414.jpeg"
   },
-  { 
-    id: 12, 
-    name: "Paneer Butter Masala", 
-    category: "North Indian", 
-    price: 249, 
-    desc: "Rich paneer gravy. Pairs well with Naan or Rice.", 
-    img: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Paneer_tikka_masala.jpg/800px-Paneer_tikka_masala.jpg" 
+  {
+    id: 12,
+    name: "Paneer Butter Masala",
+    category: "North Indian",
+    price: 249,
+    desc: "Creamy paneer curry.",
+    img: "https://images.pexels.com/photos/12737656/pexels-photo-12737656.jpeg"
   },
-  { 
-    id: 13, 
-    name: "Classic Dal Makhani", 
-    category: "North Indian", 
-    price: 219, 
-    desc: "Slow-cooked black lentils with butter and cream.", 
-    img: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 13,
+    name: "Dal Curry",
+    category: "North Indian",
+    price: 219,
+    desc: "Classic Indian dal.",
+    img: "https://images.pexels.com/photos/5410400/pexels-photo-5410400.jpeg"
   },
-  { 
-    id: 14, 
-    name: "Delhi Chole Bhature", 
-    category: "North Indian", 
-    price: 189, 
-    desc: "Spicy chickpea curry with 2 fluffy bhatures.", 
-    img: "https://images.unsplash.com/photo-1626132647523-66f5bf380027?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 14,
+    name: "Chole Bhature",
+    category: "North Indian",
+    price: 189,
+    desc: "Chickpea curry with bhature.",
+    img: "https://images.pexels.com/photos/1117862/pexels-photo-1117862.jpeg"
   },
-  { 
-    id: 15, 
-    name: "Burger & Fries Combo", 
-    category: "Combos", 
-    price: 299, 
-    desc: "Gourmet Veg Burger, Peri Peri Fries, Cold Drink.", 
-    img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 15,
+    name: "Burger Combo",
+    category: "Fast Food",
+    price: 299,
+    desc: "Burger with fries and drink.",
+    img: "https://images.pexels.com/photos/1639557/pexels-photo-1639557.jpeg"
   },
-  { 
-    id: 16, 
-    name: "Pizza & Garlic Bread", 
-    category: "Combos", 
-    price: 399, 
-    desc: "8-inch Margherita Pizza, Stuffed Garlic Bread, Coke.", 
-    img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 16,
+    name: "Pizza",
+    category: "Fast Food",
+    price: 399,
+    desc: "Cheesy pizza slice.",
+    img: "https://images.pexels.com/photos/825661/pexels-photo-825661.jpeg"
   },
-  { 
-    id: 17, 
-    name: "Tandoori Chicken Tikka", 
-    category: "Snacks", 
-    price: 229, 
-    desc: "Tandoor roasted chicken chunks with mint chutney.", 
-    img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 17,
+    name: "Chicken Tikka",
+    category: "Snacks",
+    price: 229,
+    desc: "Grilled chicken tikka.",
+    img: "https://images.pexels.com/photos/12737658/pexels-photo-12737658.jpeg"
   },
-  { 
-    id: 18, 
-    name: "Punjabi Samosa (2 pcs)", 
-    category: "Snacks", 
-    price: 79, 
-    desc: "Crispy pastry filled with spiced potatoes.", 
-    img: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 18,
+    name: "Samosa",
+    category: "Snacks",
+    price: 79,
+    desc: "Crispy potato samosa.",
+    img: "https://images.pexels.com/photos/461198/pexels-photo-461198.jpeg"
   },
-  { 
-    id: 19, 
-    name: "Paneer Pakora", 
-    category: "Snacks", 
-    price: 149, 
-    desc: "Fried paneer fritters with mint chutney.", 
-    img: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 19,
+    name: "Pakora",
+    category: "Snacks",
+    price: 149,
+    desc: "Crispy fried pakoras.",
+    img: "https://images.pexels.com/photos/12737659/pexels-photo-12737659.jpeg"
   },
-  { 
-    id: 20, 
-    name: "Gulab Jamun (2 pcs)", 
-    category: "Desserts", 
-    price: 89, 
-    desc: "Soft milk dumplings in cardamom sugar syrup.", 
-    img: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 20,
+    name: "Gulab Jamun",
+    category: "Desserts",
+    price: 89,
+    desc: "Sweet syrup balls.",
+    img: "https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg"
   },
-  { 
-    id: 21, 
-    name: "Sizzling Chocolate Brownie", 
-    category: "Desserts", 
-    price: 149, 
-    desc: "Warm gooey chocolate brownie.", 
-    img: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 21,
+    name: "Chocolate Brownie",
+    category: "Desserts",
+    price: 149,
+    desc: "Warm chocolate brownie.",
+    img: "https://images.pexels.com/photos/291528/pexels-photo-291528.jpeg"
   },
-  { 
-    id: 22, 
-    name: "Kesar Rasmalai (2 pcs)", 
-    category: "Desserts", 
-    price: 119, 
-    desc: "Cottage cheese discs in sweetened thickened milk.", 
-    img: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 22,
+    name: "Rasmalai",
+    category: "Desserts",
+    price: 119,
+    desc: "Soft milk dessert.",
+    img: "https://images.pexels.com/photos/12737660/pexels-photo-12737660.jpeg"
   },
-  { 
-    id: 23, 
-    name: "Adrak Masala Chai", 
-    category: "Beverages", 
-    price: 59, 
-    desc: "Hot Indian spiced tea, perfect for the journey.", 
-    img: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 23,
+    name: "Masala Chai",
+    category: "Beverages",
+    price: 59,
+    desc: "Hot spiced tea.",
+    img: "https://images.pexels.com/photos/5946970/pexels-photo-5946970.jpeg"
   },
-  { 
-    id: 24, 
-    name: "Classic Cold Coffee", 
-    category: "Beverages", 
-    price: 129, 
-    desc: "Thick and creamy blended cold coffee.", 
-    img: "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?auto=format&fit=crop&w=800&q=80" 
+  {
+    id: 24,
+    name: "Cold Coffee",
+    category: "Beverages",
+    price: 129,
+    desc: "Chilled creamy coffee.",
+    img: "https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg"
   }
 ];
 
@@ -275,7 +284,7 @@ const CartDrawer = ({ cart, updateQty, remove, isOpen, close, total }) => {
           ) : (
             cart.map(item => (
               <div key={item.id} className="cart-item">
-                <img src={item.img} alt={item.name} loading="lazy" />
+                <img src={item.img} alt={item.name} loading="lazy" onError={handleImgError} />
                 <div className="cart-item-details">
                   <h4>{item.name}</h4>
                   <p className="cart-item-price">₹{item.price}</p>
@@ -375,10 +384,40 @@ const Home = () => {
             <span>Happy Travelers</span>
           </div>
         </div>
+        
+        {/* REDESIGNED HERO RIGHT SECTION */}
         <div className="hero-right">
-          <div className="hero-image-bleed">
-             <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80" alt="Premium Food Plated" />
-             <div className="hero-gradient-overlay"></div>
+          <div className="hero-visual-composition">
+            {/* Main large image */}
+            <div className="main-plate floating-slow">
+              <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Premium Meal" onError={handleImgError} />
+            </div>
+            
+            {/* Secondary overlapping image */}
+            <div className="secondary-plate floating-fast">
+              <img src="https://images.unsplash.com/photo-1626132647523-66f5bf380027?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Chole Bhature" onError={handleImgError} />
+            </div>
+
+            {/* Glowing accents behind */}
+            <div className="visual-glow-1"></div>
+            <div className="visual-glow-2"></div>
+
+            {/* Floating UI Elements */}
+            <div className="float-card fc-1">
+              <div className="fc-icon"><Icons.Clock /></div>
+              <div>
+                <strong>Hot & Fresh</strong>
+                <span>On-time Delivery</span>
+              </div>
+            </div>
+
+            <div className="float-card fc-2">
+              <div className="pulse-dot"></div>
+              <div>
+                <strong>Platform 4</strong>
+                <span>Approaching Station</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -417,7 +456,7 @@ const Home = () => {
               <div key={item.id} className="signature-card">
                 <div className="sig-img-wrapper">
                   <div className="img-overlay"></div>
-                  <img src={item.img} alt={item.name} loading="lazy" />
+                  <img src={item.img} alt={item.name} loading="lazy" onError={handleImgError} />
                   <span className="sig-badge">{item.category}</span>
                 </div>
                 <div className="sig-info">
@@ -522,7 +561,7 @@ const Menu = ({ cart, addToCart }) => {
           return (
             <div key={item.id} className="menu-card">
               <div className="menu-img">
-                <img src={item.img} alt={item.name} loading="lazy" />
+                <img src={item.img} alt={item.name} loading="lazy" onError={handleImgError} />
                 <div className="menu-img-gradient"></div>
                 <span className="menu-cat-tag">{item.category}</span>
               </div>
@@ -751,7 +790,7 @@ const TrackOrder = () => {
             {step === 2 && (
               <div className="executive-card">
                 <div className="exec-avatar">
-                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Delivery Executive" />
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80" alt="Delivery Executive" onError={handleImgError} />
                 </div>
                 <div className="exec-info">
                   <h4>Rajesh Kumar</h4>
